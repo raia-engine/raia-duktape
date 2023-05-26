@@ -22,6 +22,25 @@ static duk_ret_t raia_core_exit(duk_context *ctx) {
     return 0;
 }
 
+static duk_ret_t raia_core_pointer_to_number(duk_context *ctx) {
+    int *pointer = duk_to_pointer(ctx, 0);
+    volatile uintptr_t i_ptr = (uintptr_t)pointer;
+    volatile int *ptr = (int *)i_ptr;
+    duk_push_number(ctx, (double)i_ptr);
+    return 1;
+}
+
+static duk_ret_t raia_core_number_to_pointer(duk_context *ctx) {
+    void *ptr = (void *)(uintptr_t)duk_to_number(ctx, 0);
+    duk_push_pointer(ctx, ptr);
+    return 1;
+}
+
+//static duk_ret_t raia_core_entrust(duk_context *ctx) {
+//    const char *json_string = duk_to_string(ctx, 0);
+//    //duk_s
+//}
+
 // lib
 static duk_ret_t raia_lib_open(duk_context *ctx) {
     const char *dll_file = duk_to_string(ctx, 0);
@@ -192,6 +211,8 @@ static raia_config_t raia_set_functions(duk_context *ctx) {
 
     register_function(ctx, "print", raia_core_print, 1);
     register_function(ctx, "exit", raia_core_exit, 1);
+    register_function(ctx, "pointerToNumber", raia_core_pointer_to_number, 1);
+    register_function(ctx, "numberToPointer", raia_core_number_to_pointer, 1);
     duk_put_prop_string(ctx, raia_idx, "Core");
 
     register_boolean(ctx, "debug_mode", config.debug_mode);
