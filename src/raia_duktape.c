@@ -23,16 +23,12 @@ static duk_ret_t raia_core_exit(duk_context *ctx) {
 }
 
 static duk_ret_t raia_core_pointer_to_number(duk_context *ctx) {
-    int *pointer = duk_to_pointer(ctx, 0);
-    volatile uintptr_t i_ptr = (uintptr_t)pointer;
-    volatile int *ptr = (int *)i_ptr;
-    duk_push_number(ctx, (double)i_ptr);
+    duk_push_number(ctx, (double)(uintptr_t)duk_to_pointer(ctx, 0));
     return 1;
 }
 
 static duk_ret_t raia_core_number_to_pointer(duk_context *ctx) {
-    void *ptr = (void *)(uintptr_t)duk_to_number(ctx, 0);
-    duk_push_pointer(ctx, ptr);
+    duk_push_pointer(ctx, (void *)(uintptr_t)duk_to_number(ctx, 0));
     return 1;
 }
 
