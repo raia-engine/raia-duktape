@@ -6,20 +6,16 @@
 #define RAIA_CORE_STATIC_PLUGIN_LOADER_H
 
 #include <stdio.h>
-
+#include "../uthash/uthash.h"
 #include "../platform.h"
+#include "../duktape/duktape.h"
 
 #ifdef __WINDOWS__
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #else
-
 #include <dlfcn.h>
-
 #endif
-
-#include "../duktape/duktape.h"
-#include "../list/list.h"
 
 #ifdef __WINDOWS__
 #define raia_handle_t HMODULE
@@ -33,18 +29,16 @@
 #define raia_dlclose(handle) dlclose(handle)
 #endif
 
-void init_plugin_loader(void);
+typedef struct raia_plugin_hash_t {
+    char name[50];
+    void *handle;
+    UT_hash_handle hh;
+} raia_plugin_hash_t;
 
-void open_plugin(const char *dll_file);
-
-void close_plugin(void);
-
-void close_all_plugin(void);
-
-void *get_plugin_handle(void);
-
-duk_ret_t (*add_plugin_func(duk_context *ctx, const char *func_name))(duk_context *ctx);
-
-void (*add_plugin_init(const char *func_name))(void);
+void init_plugin_hash(void);
+void free_plugin_hash();
+void *add_plugin_hash(const char *name);
+void *find_plugin_hash(const char *name);
+void delete_plugin_hash(const char *name);
 
 #endif //RAIA_CORE_STATIC_PLUGIN_LOADER_H
