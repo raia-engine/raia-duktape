@@ -19,6 +19,7 @@ joint_t *joint_init_out(void);
 joint_t *joint_init_with_str(const char *s);
 joint_t *joint_init_in_with_str(const char *s);
 joint_t *joint_init_in_with_file(const char *s);
+bool joint_in_exist(joint_t *joint, const char *key);
 const char *joint_get_in_str(joint_t *joint, const char *key);
 int joint_get_in_int(joint_t *joint, const char *key);
 int64_t joint_get_in_sint(joint_t *joint, const char *key);

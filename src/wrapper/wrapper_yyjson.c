@@ -51,6 +51,14 @@ joint_t *joint_init_with_str(const char *s) {
     return joint;
 }
 
+bool joint_in_exist(joint_t *joint, const char *key) {
+    yyjson_val *val = yyjson_obj_get(joint->in_root, key);
+    if (val != NULL) {
+        return true;
+    }
+    return false;
+}
+
 const char *joint_get_in_str(joint_t *joint, const char *key) {
     return yyjson_get_str(yyjson_obj_get(joint->in_root, key));
 }

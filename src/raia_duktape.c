@@ -31,6 +31,16 @@ static duk_ret_t raia_core_entrust(duk_context *ctx) {
 }
 
 // run
+static duk_ret_t raia_core_is_pointer(duk_context *ctx) {
+    duk_push_boolean(ctx, duk_is_pointer(ctx, 0));
+    return 1;
+}
+
+static duk_ret_t raia_core_is_buffer(duk_context *ctx) {
+    duk_push_boolean(ctx, duk_is_buffer(ctx, 0));
+    return 1;
+}
+
 static duk_ret_t raia_core_pointer_to_number(duk_context *ctx) {
     duk_push_number(ctx, (double)(uintptr_t)duk_to_pointer(ctx, 0));
     return 1;
@@ -92,39 +102,22 @@ static duk_ret_t raia_lib_add(duk_context *ctx) { // func_hash
 
 static duk_ret_t raia_lib_call(duk_context *ctx) { // func_hash
     const char *dll_func_name = duk_to_string(ctx, 0);
-    char *src; //json string
-    void *data;
-    duk_size_t size;
+    char *src = NULL; //json string
     if (duk_is_string(ctx, 1)) {
         src = (char *)duk_require_string(ctx, 1);
-    } else {
-        src = NULL;
-    }
-    if (duk_is_buffer(ctx, 2)) {
-        data = (void *)duk_require_buffer_data(ctx, 2, &size);
-    } else if(duk_is_pointer(ctx, 2)) {
-        data = (void *)duk_require_pointer(ctx, 2);
-    } else {
-        data = NULL;
-        size = 0;
-    }
-    if (duk_is_number(ctx, 3)) {
-        size = (duk_size_t)duk_require_number(ctx, 3);
-    }
-
-    if (src != NULL) {
         joint_t *joint = joint_init_in_with_str(src);
-        const char *return_type = joint_get_in_str(joint, "@return");
-        joint_free(joint);
-
-        if (strcmp(return_type, "pointer") == 0 && return_type != NULL) {
-            const char *dest = call_func_hash(dll_func_name, src, data, (int)size);
-            duk_push_pointer(ctx, (void *)dest);
-            return 1;
+        if (joint_in_exist(joint, "@return")) {
+            const char *return_type = joint_get_in_str(joint, "@return");
+            joint_free(joint);
+            if (strcmp(return_type, "pointer") == 0 && return_type != NULL) {
+                const char *dest = call_func_hash(dll_func_name, src);
+                duk_push_pointer(ctx, (void *)dest);
+                return 1;
+            }
         }
+        joint_free(joint);
     }
-
-    const char *dest = call_func_hash(dll_func_name, src, data, (int)size);
+    const char *dest = call_func_hash(dll_func_name, src);
     duk_push_string(ctx, dest);
     if(dest != NULL) {
         free((void *)dest);
@@ -184,12 +177,15 @@ static raia_config_t raia_set_functions(duk_context *ctx) {
     register_function(ctx, "close", raia_lib_close, 1);
     register_function(ctx, "closeAll", raia_lib_close_all, 0);
     register_function(ctx, "add", raia_lib_add, 2);
-    register_function(ctx, "call", raia_lib_call, 4);
+    register_function(ctx, "call", raia_lib_call, 2);
     duk_put_prop_string(ctx, core_idx, "Lib");
 
     register_function(ctx, "print", raia_core_print, 1);
     register_function(ctx, "exit", raia_core_exit, 1);
     register_function(ctx, "entrust", raia_core_entrust, 1);
+
+    register_function(ctx, "isPointer", raia_core_is_pointer, 1);
+    register_function(ctx, "isBuffer", raia_core_is_buffer, 1);
     register_function(ctx, "pointerToNumber", raia_core_pointer_to_number, 1);
     register_function(ctx, "numberToPointer", raia_core_number_to_pointer, 1);
     register_function(ctx, "arrayBufferToPointer", raia_core_array_buffer_to_pointer, 1);
